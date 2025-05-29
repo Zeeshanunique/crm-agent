@@ -6,7 +6,15 @@
           "-y",
           "@modelcontextprotocol/server-postgres",
           "${SUPABASE_URI}"
-        ]
+        ],
+        "transport": "stdio"
+      },
+      "marketing": {
+        "command": "python",
+        "args": [
+            "/Users/kennethliao/projects/tutorials/crm-agent/src/ralph/mymcp/servers/marketing_server.py"
+        ],
+        "transport": "stdio"
       }
     }
   }
