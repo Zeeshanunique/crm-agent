@@ -87,7 +87,7 @@ async def send_campaign_email(
         )
         session.commit()
 
-    return "Email sent!"
+    return f"Successfully sent <{subject}> to customer <{customer_id}>!"
 
 
 if __name__ == "__main__":
