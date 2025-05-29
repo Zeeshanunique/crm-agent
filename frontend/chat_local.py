@@ -1,20 +1,28 @@
-from ralph.graph import build_graph
+from ralph.graph import build_graph, AgentState
 from langchain_core.messages import AIMessageChunk, HumanMessage
-from typing import AsyncGenerator
+from typing import AsyncGenerator, Any
 from langgraph.graph import StateGraph
+from langgraph.types import Command
+import json
 
 
-async def stream_graph_responses(message: str, graph: StateGraph, **kwargs) -> AsyncGenerator[str, None]:
-    """Asynchronously stream the results of the graph run.
+async def stream_graph_responses(
+        input: dict[str, Any],
+        graph: StateGraph,
+        **kwargs
+        ) -> AsyncGenerator[str, None]:
+    """Asynchronously stream the result of the graph run.
 
     Args:
-        message: The user message.
+        input: The input to the graph.
+        graph: The compiled graph.
+        **kwargs: Additional keyword arguments.
 
     Returns:
-        str: The final LLM response or tool call response
+        str: The final LLM or tool call response
     """
     async for message_chunk, metadata in graph.astream(
-        input={"messages": [HumanMessage(content=message)]},
+        input=input,
         stream_mode="messages",
         **kwargs
         ):
@@ -44,35 +52,64 @@ async def stream_graph_responses(message: str, graph: StateGraph, **kwargs) -> A
 async def main():
     try:
         graph = await build_graph()
-        # A config is required for memory. All graph checkpoints are saved to a thread_id.
+
         config = {
             "configurable": {
                 "thread_id": "1"
             }
         }
+        yolo_mode = False
 
-        # Stream responses
+        graph_input = AgentState(
+            messages=[
+                HumanMessage(content="Briefly introduce yourself and offer to help me.")
+            ],
+            yolo_mode=yolo_mode
+        )
+
         while True:
-            user_input = input("User: ")
-            if user_input.lower() in ["exit", "quit"]:
-                break
-
-            print(f"\n---- User ---- \n\n{user_input}\n")
-
-            print(f"---- Assistant ---- \n")
-            # Get the response using our simplified get_stream function
-            async for response in stream_graph_responses(user_input, graph, config=config):
+            print(f" ---- 🤖 Assistant ---- \n")
+            async for response in stream_graph_responses(graph_input, graph, config=config):
                 print(response, end="", flush=True)
 
-            # thread_state = agent.runnable.get_state(config=config)
+            thread_state = graph.get_state(config=config)
 
-            # if "chart_json" in thread_state.values:
-            #     chart_json = thread_state.values["chart_json"]
-            #     if chart_json:
-            #         import plotly.io as pio
-            #         fig = pio.from_json(chart_json)
-            #         fig.show()
-            # print("")
+            while thread_state.interrupts:
+                # if interrupt, collect input and handle resume
+                for interrupt in thread_state.interrupts:
+                    print("\n ----- ✅ / ❌ Human Approval Required ----- \n")
+                    interrupt_json_str = json.dumps(interrupt.value, indent=2, ensure_ascii=False)
+                    print(interrupt_json_str)
+                    print("\n Please specify whether you want to continue, update, or provide feedback.")
+
+                    action = input("Action (continue, update, feedback): ")
+                    while action not in ["continue", "update", "feedback"]:
+                        print("Invalid action. Please try again.")
+                        action = input("Action (continue, update, feedback): ")
+
+                    if action == "continue":
+                        data=None
+                    else:
+                        data = input("Data: ")
+
+                    print(f" ----- 🤖 Assistant ----- \n")
+                    async for response in stream_graph_responses(Command(resume={"action": action, "data": data}), graph, config=config):
+                        print(response, end="", flush=True)
+
+                    thread_state = graph.get_state(config=config)
+
+            user_input = input("User: ")
+            if user_input.lower() in ["exit", "quit"]:
+                print("\n\nExit command received. Exiting...\n\n")
+                break
+            graph_input = AgentState(
+                messages=[
+                    HumanMessage(content=user_input)
+                ],
+                yolo_mode=yolo_mode
+            )
+
+            print(f"\n\n ----- 🥷 Human ----- \n\n{user_input}\n")
 
     except Exception as e:
         print(f"Error: {type(e).__name__}: {str(e)}")
@@ -83,7 +120,5 @@ if __name__ == "__main__":
     import asyncio
     import nest_asyncio
     nest_asyncio.apply()
-
-    print(f"\nGreetings!\n\nTry asking Ralph to show you a preview of the data.\n\n{40*"="}\n\n")
 
     asyncio.run(main())
