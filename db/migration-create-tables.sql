@@ -78,8 +78,8 @@ create table public.campaign_emails (
   opened_at timestamp without time zone null,
   clicked_at timestamp without time zone null,
   constraint campaign_emails_pkey primary key (id),
-  constraint campaign_emails_campaign_id_fkey foreign KEY (campaign_id) references marketing_campaigns (id) on delete CASCADE,
-  constraint campaign_emails_customer_id_fkey foreign KEY (customer_id) references customers ("Customer ID") on delete CASCADE,
+  constraint campaign_emails_campaign_id_fkey foreign KEY (campaign_id) references marketing_campaigns (id) on update CASCADE on delete CASCADE,
+  constraint campaign_emails_customer_id_fkey foreign KEY (customer_id) references customers ("Customer ID") on update CASCADE on delete CASCADE,
   constraint campaign_emails_status_check check (
     (
       status = any (
