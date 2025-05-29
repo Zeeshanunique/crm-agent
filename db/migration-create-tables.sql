@@ -45,26 +45,53 @@ create table public.rfm (
 
 ALTER TABLE rfm ENABLE ROW LEVEL SECURITY;
 
-CREATE TABLE marketing_campaigns (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    name TEXT NOT NULL,
-    type TEXT CHECK (type IN ('loyalty', 'referral', 're-engagement')),
-    description TEXT,
-    created_at TIMESTAMP DEFAULT NOW()
-);
+create table public.marketing_campaigns (
+  id uuid not null default gen_random_uuid (),
+  name text not null,
+  type text null,
+  description text null,
+  created_at timestamp without time zone null default now(),
+  constraint marketing_campaigns_pkey primary key (id),
+  constraint marketing_campaigns_type_check check (
+    (
+      type = any (
+        array[
+          'loyalty'::text,
+          'referral'::text,
+          're-engagement'::text
+        ]
+      )
+    )
+  )
+) TABLESPACE pg_default;
 
 ALTER TABLE marketing_campaigns ENABLE ROW LEVEL SECURITY;
 
-CREATE TABLE campaign_emails (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    campaign_id UUID REFERENCES marketing_campaigns(id) ON DELETE CASCADE,
-    customer_id BIGINT REFERENCES customers("Customer ID") ON DELETE CASCADE,
-    subject TEXT,
-    body TEXT,
-    sent_at TIMESTAMP DEFAULT NOW(),
-    status TEXT CHECK (status IN ('sent', 'bounced', 'opened', 'clicked')) DEFAULT 'sent',
-    opened_at TIMESTAMP,
-    clicked_at TIMESTAMP
-);
+create table public.campaign_emails (
+  id uuid not null default gen_random_uuid (),
+  campaign_id uuid null,
+  customer_id bigint null,
+  subject text null,
+  body text null,
+  sent_at timestamp without time zone null default now(),
+  status text null default 'sent'::text,
+  opened_at timestamp without time zone null,
+  clicked_at timestamp without time zone null,
+  constraint campaign_emails_pkey primary key (id),
+  constraint campaign_emails_campaign_id_fkey foreign KEY (campaign_id) references marketing_campaigns (id) on delete CASCADE,
+  constraint campaign_emails_customer_id_fkey foreign KEY (customer_id) references customers ("Customer ID") on delete CASCADE,
+  constraint campaign_emails_status_check check (
+    (
+      status = any (
+        array[
+          'sent'::text,
+          'bounced'::text,
+          'opened'::text,
+          'clicked'::text
+        ]
+      )
+    )
+  )
+) TABLESPACE pg_default;
 
 ALTER TABLE campaign_emails ENABLE ROW LEVEL SECURITY;
