@@ -12,7 +12,7 @@
       "marketing": {
         "command": "python",
         "args": [
-            "/Users/kennethliao/projects/tutorials/crm-agent/src/ralph/mymcp/servers/marketing_server.py"
+            "src/ralph/mymcp/servers/marketing_server.py"
         ],
         "transport": "stdio"
       }
