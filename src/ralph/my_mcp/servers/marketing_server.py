@@ -74,7 +74,9 @@ async def send_campaign_email(
     Returns:
         A confirmation that the email was sent.
     """
+    # TODO: Send email via MCP
 
+    # Create email record in db
     with SessionLocal() as session:
         result = session.execute(
             text(
