@@ -12,7 +12,7 @@
       "marketing": {
         "command": "python",
         "args": [
-            "src/ralph/mymcp/servers/marketing_server.py"
+            "src/ralph/my_mcp/servers/marketing_server.py"
         ],
         "transport": "stdio"
       },
