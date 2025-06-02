@@ -65,7 +65,7 @@ async def build_graph():
         if review_action == "continue":
             return Command(goto="tools")
         
-        # update the AI message AND tool call
+        # Change the tool call arguments created by our Agent
         elif review_action == "update":
             
             updated_message = AIMessage(
@@ -80,6 +80,7 @@ async def build_graph():
 
             return Command(goto="tools", update={"messages": [updated_message]})
         
+        # Send feedback to the Agent as a tool message (required after a tool call)
         elif review_action == "feedback":
             
             tool_message = ToolMessage(
