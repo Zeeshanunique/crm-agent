@@ -13,7 +13,7 @@ from langgraph.graph import StateGraph, START, END
 from langgraph.prebuilt import ToolNode
 from langgraph.checkpoint.memory import MemorySaver
 from langchain_mcp_adapters.client import MultiServerMCPClient
-from ralph.mymcp.config import mcp_config
+from ralph.my_mcp.config import mcp_config
 from ralph.prompts import ralph_system_prompt
 import json
 
