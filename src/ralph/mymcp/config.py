@@ -56,6 +56,7 @@ def resolve_env_vars(config: dict) -> dict:
     Resolve environment variables in the MCP configuration.
     This allows sensitive information to be stored in the .env file rather than in the config.
     """
+    skipped_servers = []
     for server_name, server_config in config["mcpServers"].items():
         for property in server_config.keys():
             if property == "env":
@@ -63,17 +64,28 @@ def resolve_env_vars(config: dict) -> dict:
                     if isinstance(value, str) and value.startswith("${"):
                         env_var_name = value[2:-1]
                         env_var_value = os.environ.get(env_var_name, None)
-                        if env_var_value is None:
-                            raise ValueError(f"Environment variable {env_var_name} is not set")
+                        if env_var_value is None or env_var_value == "":
+                            print(f"\nEnvironment variable {env_var_name} is not set\n")
+                            print(f"Skipping server {server_name}\n")
+                            skipped_servers.append(server_name)
+                            continue
                         config["mcpServers"][server_name][property][key] = env_var_value
             if property == "args":
                 for i, arg in enumerate(server_config[property]):
                     if isinstance(arg, str) and arg.startswith("${"):
                         env_var_name = arg[2:-1]
                         env_var_value = os.environ.get(env_var_name, None)
-                        if env_var_value is None:
-                            raise ValueError(f"Environment variable {env_var_name} is not set")
+                        if env_var_value is None or env_var_value == "":
+                            print(f"\nEnvironment variable {env_var_name} is not set\n")
+                            print(f"Skipping server {server_name}\n")
+                            skipped_servers.append(server_name)
+                            continue
                         config["mcpServers"][server_name][property][i] = env_var_value
+
+    # Remove skipped servers
+    for server_name in set(skipped_servers):
+        del config["mcpServers"][server_name]
+
     return config
 
 
