@@ -12,6 +12,7 @@ dependencies = [
     "langgraph>=0.4.7",
     "psycopg2-binary>=2.9.10",
     "python-dotenv>=1.1.0",
+    "ralph",
     "sqlalchemy>=2.0.41",
 ]
 
