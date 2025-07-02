@@ -1,3 +1,7 @@
+import sys
+import os
+sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'src'))
+
 from ralph.graph import build_graph, AgentState
 from langchain_core.messages import AIMessageChunk, HumanMessage
 from typing import AsyncGenerator, Any
