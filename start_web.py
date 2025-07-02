@@ -21,7 +21,7 @@ def main():
         # Launch streamlit
         subprocess.run([
             sys.executable, "-m", "streamlit", "run", 
-            "web_chat.py",
+            "simple_chat.py",
             "--server.port", "8501",
             "--server.address", "localhost",
             "--browser.gatherUsageStats", "false"
